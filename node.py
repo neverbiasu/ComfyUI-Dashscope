@@ -3,6 +3,9 @@ from dashscope import Generation
 
 
 class DashscopeLLMLoader:
+    def __init__(self):
+        pass
+
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -47,13 +50,15 @@ class DashscopeLLMLoader:
                     ],
                     {"default": "qwen-turbo-latest"},
                 ),
-                "qwen_long": (["qwen_long"], {"default", "qwen_long"}),
+                "qwen_long": (["qwen_long"], {"default": "qwen_long"}),
             }
         }
 
-    CATEGORY = "dashscope"
     FUNCTION = "select_model"
+    OUTPUT_NODE = True
     RETURN_TYPES = ("String",)
+
+    CATEGORY = "dashscope"
 
     def select_model(self, model_type, qwen_max, qwen_plus, qwen_turbo, qwen_long):
         if model_type == "qwen_max":
