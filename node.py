@@ -73,3 +73,55 @@ class DashscopeLLMLoader:
             raise ValueError(f"Invalid model type: {model_type}")
 
         return model_version
+
+
+class DashscopeVLMLoader:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model_type": (
+                    ["qwen-vl-max", "qwen-vl-plus"],
+                    {"default": "qwen-vl-max"},
+                ),
+                "qwen-vl-max": (
+                    [
+                        "qwen-vl-max",
+                        "qwen-vl-max-latest",
+                        "qwen-vl-max-2024-11-19",
+                        "qwen-vl-max-2024-10-30",
+                        "qwen-vl-max-2024-08-09",
+                        "qwen-vl-max-2024-02-01",
+                    ],
+                    {"default": "qwen-vl-max-latest"},
+                ),
+                "qwen-vl-plus": (
+                    [
+                        "qwen-vl-plus",
+                        "qwen-vl-plus-latest",
+                        "qwen-vl-plus-2024-08-09",
+                        "qwen-vl-plus-2023-12-01",
+                    ],
+                    {"default": "qwen-vl-plus-latest"},
+                ),
+            }
+        }
+
+    FUNCTION = "select_model"
+    OUTPUT_NODE = True
+    RETURN_TYPES = ("String",)
+
+    CATEGORY = "dashscope"
+
+    def select_model(self, model_type, qwen_vl_max, qwen_vl_plus):
+        if model_type == "qwen-vl-max":
+            model_version = qwen_vl_max
+        elif model_type == "qwen-vl-plus":
+            model_version = qwen_vl_plus
+        else:
+            raise ValueError(f"Invalid model type: {model_type}")
+
+        return model_version
