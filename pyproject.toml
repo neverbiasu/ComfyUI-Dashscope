@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-dashscope"
+description = "This project adapts the dashscope([a/aliyun-bailian](https://bailian.console.aliyun.com)) api into ComfyUI."
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["dashscope"]
+
+[project.urls]
+Repository = "https://github.com/neverbiasu/ComfyUI-Dashscope"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-Dashscope"
+Icon = ""
