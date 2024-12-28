@@ -125,3 +125,53 @@ class DashscopeVLMLoader:
             raise ValueError(f"Invalid model type: {model_type}")
 
         return model_version
+
+
+class DashscopeModelCaller:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model_version": ("String", {"default": "qwen-max"}),
+                "system_prompt": (
+                    "String",
+                    {"default": "You are a helpful assistant."},
+                ),
+                "user_prompt": ("String", {"default": ""}),
+            },
+            "optional": {
+                "image": ("Image", {"default": None}),
+            },
+        }
+
+    FUNCTION = "call_model"
+    OUTPUT_NODE = True
+    RETURN_TYPES = ("String",)
+
+    CATEGORY = "dashscope"
+
+    def call_model(self, model_version, system_prompt, user_prompt):
+        if not model_version:
+            raise ValueError("Model version cannot be empty")
+        if not system_prompt:
+            raise ValueError("System prompt cannot be empty")
+        if not user_prompt:
+            raise ValueError("User prompt cannot be empty")
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        response = Generation.call(
+            api_key=os.environ["DASHSCOPE_API_KEY"],
+            model=model_version,
+            messages=messages,
+            result_format="message",
+        )
+
+        message_content = response["output"]["choices"][0]["message"]["content"]
+        return message_content
