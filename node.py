@@ -56,7 +56,7 @@ class DashscopeLLMLoader:
 
     FUNCTION = "select_model"
     OUTPUT_NODE = True
-    RETURN_TYPES = ("String",)
+    RETURN_TYPES = ("STRING",)
 
     CATEGORY = "dashscope"
 
@@ -112,7 +112,7 @@ class DashscopeVLMLoader:
 
     FUNCTION = "select_model"
     OUTPUT_NODE = True
-    RETURN_TYPES = ("String",)
+    RETURN_TYPES = ("STRING",)
 
     CATEGORY = "dashscope"
 
@@ -135,21 +135,21 @@ class DashscopeModelCaller:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model_version": ("String", {"default": "qwen-max"}),
+                "model_version": ("STRING", {"default": "qwen-max"}),
                 "system_prompt": (
-                    "String",
+                    "STRING",
                     {"default": "You are a helpful assistant."},
                 ),
-                "user_prompt": ("String", {"default": ""}),
+                "user_prompt": ("STRING", {"default": ""}),
             },
             "optional": {
-                "image": ("Image", {"default": None}),
+                "image": ("IMAGE", {"default": None}),
             },
         }
 
     FUNCTION = "call_model"
     OUTPUT_NODE = True
-    RETURN_TYPES = ("String",)
+    RETURN_TYPES = ("STRING",)
 
     CATEGORY = "dashscope"
 
