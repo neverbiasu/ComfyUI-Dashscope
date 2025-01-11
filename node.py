@@ -1,5 +1,23 @@
 import os
+import random
+import string
 from dashscope import Generation
+import torchvision.transforms as transforms
+
+
+def generate_random_image_name():
+    random_number = "".join(random.choices(string.ascii_letters + string.digits, k=10))
+    return f"image_{random_number}.png"
+
+
+def get_image_url(image):
+    image = image.squeeze(0)
+    image = image.permute(2, 0, 1)
+    image = transforms.ToPILImage()(image)
+
+    image_name = generate_random_image_name()
+    image.save(image_name)
+    return image_name
 
 
 class DashscopeLLMLoader:
@@ -153,7 +171,7 @@ class DashscopeModelCaller:
 
     CATEGORY = "dashscope"
 
-    def call_model(self, model_version, system_prompt, user_prompt):
+    def call_model(self, model_version, system_prompt, user_prompt, image):
         if not model_version:
             raise ValueError("Model version cannot be empty")
         if not system_prompt:
@@ -161,10 +179,23 @@ class DashscopeModelCaller:
         if not user_prompt:
             raise ValueError("User prompt cannot be empty")
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
+        if image == None:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+        else:
+            image_url = get_image_url(image)
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {
+                    "role": "user",
+                    "content": [
+                        {"image": image_url},
+                        {"text": user_prompt},
+                    ],
+                },
+            ]
 
         response = Generation.call(
             api_key=os.environ["DASHSCOPE_API_KEY"],
