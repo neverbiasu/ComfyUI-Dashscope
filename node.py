@@ -153,7 +153,7 @@ class DashscopeModelCaller:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model_version": ("STRING", {"default": "qwen-max"}),
+                "model_version": ("STRING", {"default": None}),
                 "system_prompt": (
                     "STRING",
                     {"default": "You are a helpful assistant."},
@@ -198,7 +198,7 @@ class DashscopeModelCaller:
             ]
 
         response = Generation.call(
-            api_key=os.environ["DASHSCOPE_API_KEY"],
+            api_key=os.getenv("DASHSCOPE_API_KEY"),
             model=model_version,
             messages=messages,
             result_format="message",
