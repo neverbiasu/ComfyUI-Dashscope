@@ -169,6 +169,7 @@ class DashscopeModelCaller:
             raise ValueError("DASHSCOPE_API_KEY environment variable is not set")
 
         if image == None:
+            print("Call the LLM model")
             messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -180,6 +181,7 @@ class DashscopeModelCaller:
                 result_format="message",
             )
         else:
+            print("Call the VLM model")
             image_url = get_image_url(image)
             messages = [
                 {"role": "system", "content": system_prompt},
