@@ -182,6 +182,7 @@ class DashscopeModelCaller:
             )
         else:
             print("Call the VLM model")
+            print("Model version is: ", model_version)
             image_url = get_image_url(image)
             messages = [
                 {"role": "system", "content": system_prompt},
