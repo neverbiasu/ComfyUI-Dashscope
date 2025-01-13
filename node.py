@@ -173,7 +173,7 @@ class DashscopeModelCaller:
         if not api_key:
             raise ValueError("DASHSCOPE_API_KEY environment variable is not set")
 
-        if image == None:
+        if image is None:
             print("Call the LLM model")
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -214,5 +214,5 @@ class DashscopeModelCaller:
         if "output" not in response:
             raise ValueError(f"Unexpected response format. Response: {response}")
 
-        message_content = response["output"]["choices"][0]["message"]["content"]
+        message_content = response.output.choices[0].message.content[0]["text"]
         return (message_content,)
