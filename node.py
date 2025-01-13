@@ -20,7 +20,7 @@ def get_image_url(image):
     return image_name
 
 
-def get_model_versions(model_type):
+def get_model_versions(model_type: str) -> list[str]:
     model_versions = []
     current_group = None
     model_versions_file = f"model_versions/{model_type}.txt"
@@ -78,7 +78,7 @@ class DashscopeVLMLoader:
 
     @classmethod
     def INPUT_TYPES(cls):
-        model_versions = get_model_versions()
+        model_versions = get_model_versions("vlm")
         return {
             "required": {
                 "model_version": (
