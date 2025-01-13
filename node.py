@@ -1,7 +1,7 @@
 import os
 import random
 import string
-from dashscope import Generation
+from dashscope import Generation, MultiModalConversation
 import torchvision.transforms as transforms
 
 
@@ -184,6 +184,12 @@ class DashscopeModelCaller:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ]
+            response = Generation.call(
+                api_key=os.getenv("DASHSCOPE_API_KEY"),
+                model=model_version,
+                messages=messages,
+                result_format="message",
+            )
         else:
             image_url = get_image_url(image)
             messages = [
@@ -196,13 +202,12 @@ class DashscopeModelCaller:
                     ],
                 },
             ]
-
-        response = Generation.call(
-            api_key=os.getenv("DASHSCOPE_API_KEY"),
-            model=model_version,
-            messages=messages,
-            result_format="message",
-        )
+            response = MultiModalConversation.call(
+                api_key=os.getenv("DASHSCOPE_API_KEY"),
+                model=model_version,
+                messages=messages,
+                result_format="message",
+            )
 
         message_content = response["output"]["choices"][0]["message"]["content"]
         return message_content
