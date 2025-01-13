@@ -59,10 +59,10 @@ class DashscopeLLMLoader:
     FUNCTION = "select_model"
     OUTPUT_NODE = True
     RETURN_TYPES = ("STRING",)
+
     CATEGORY = "dashscope"
 
     def select_model(self, model_version) -> tuple[str]:
-        print("Selected model version:", model_version)
         if not model_version:
             raise ValueError("Model version cannot be empty")
         return (model_version,)
@@ -87,10 +87,10 @@ class DashscopeVLMLoader:
     FUNCTION = "select_model"
     OUTPUT_NODE = True
     RETURN_TYPES = ("STRING",)
+
     CATEGORY = "dashscope"
 
     def select_model(self, model_version) -> tuple[str]:
-        print("Selected model version: ", model_version)
         if not model_version:
             raise ValueError("Model version cannot be empty")
         return (model_version,)
@@ -102,9 +102,10 @@ class DashscopeModelCaller:
 
     @classmethod
     def INPUT_TYPES(cls):
+        model_versions = get_model_versions("vlm")
         return {
             "required": {
-                "model_version": ("STRING", {"default": None}),
+                "model_version": (model_versions),
                 "system_prompt": (
                     "STRING",
                     {"default": "You are a helpful assistant."},
