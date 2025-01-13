@@ -101,11 +101,7 @@ class DashscopeVLMLoader:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model_type": (
-                    ["qwen-vl-max", "qwen-vl-plus"],
-                    {"default": "qwen-vl-max"},
-                ),
-                "qwen_vl_max": (
+                "model_version": (
                     [
                         "qwen-vl-max",
                         "qwen-vl-max-latest",
@@ -113,17 +109,12 @@ class DashscopeVLMLoader:
                         "qwen-vl-max-2024-10-30",
                         "qwen-vl-max-2024-08-09",
                         "qwen-vl-max-2024-02-01",
-                    ],
-                    {"default": "qwen-vl-max-latest"},
-                ),
-                "qwen_vl_plus": (
-                    [
                         "qwen-vl-plus",
                         "qwen-vl-plus-latest",
                         "qwen-vl-plus-2024-08-09",
                         "qwen-vl-plus-2023-12-01",
                     ],
-                    {"default": "qwen-vl-plus-latest"},
+                    {"default": "qwen-vl-max-latest"},
                 ),
             }
         }
@@ -131,17 +122,11 @@ class DashscopeVLMLoader:
     FUNCTION = "select_model"
     OUTPUT_NODE = True
     RETURN_TYPES = ("STRING",)
-
     CATEGORY = "dashscope"
 
-    def select_model(self, model_type, qwen_vl_max, qwen_vl_plus):
-        if model_type == "qwen-vl-max":
-            model_version = qwen_vl_max
-        elif model_type == "qwen-vl-plus":
-            model_version = qwen_vl_plus
-        else:
-            raise ValueError(f"Invalid model type: {model_type}")
-
+    def select_model(self, model_version):
+        if not model_version:
+            raise ValueError("Model version cannot be empty")
         return model_version
 
 
