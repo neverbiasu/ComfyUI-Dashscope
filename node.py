@@ -105,7 +105,7 @@ class DashscopeVLMLoader:
                     ["qwen-vl-max", "qwen-vl-plus"],
                     {"default": "qwen-vl-max"},
                 ),
-                "qwen-vl-max": (
+                "qwen_vl_max": (
                     [
                         "qwen-vl-max",
                         "qwen-vl-max-latest",
@@ -116,7 +116,7 @@ class DashscopeVLMLoader:
                     ],
                     {"default": "qwen-vl-max-latest"},
                 ),
-                "qwen-vl-plus": (
+                "qwen_vl_plus": (
                     [
                         "qwen-vl-plus",
                         "qwen-vl-plus-latest",
@@ -217,7 +217,7 @@ class DashscopeModelCaller:
             raise ValueError("API call returned None")
 
         print("API Response:", response)
-        
+
         if "output" not in response:
             raise ValueError(f"Unexpected response format. Response: {response}")
 
