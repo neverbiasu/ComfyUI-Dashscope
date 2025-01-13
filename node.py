@@ -20,78 +20,55 @@ def get_image_url(image):
     return image_name
 
 
+def get_model_versions(model_type):
+    model_versions = []
+    current_group = None
+    model_versions_file = f"model_versions/{model_type}.txt"
+
+    with open(model_versions_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            if line.startswith("[") and line.endswith("]"):
+                current_group = line[1:-1]
+                continue
+
+            model_versions.append(line)
+
+    return model_versions
+
+
 class DashscopeLLMLoader:
     def __init__(self):
         pass
 
     @classmethod
     def INPUT_TYPES(cls):
+        model_versions = get_model_versions("llm")
         return {
             "required": {
-                "model_type": (
-                    ["qwen_max", "qwen_plus", "qwen_turbo", "qwen_long"],
-                    {"default": "qwen_max"},
+                "model_version": (
+                    model_versions,
+                    {
+                        "default": (
+                            model_versions[0] if model_versions else "qwen-max-latest"
+                        )
+                    },
                 ),
-                "qwen_max": (
-                    [
-                        "qwen-max",
-                        "qwen-max-latest",
-                        "qwen-max-2024-09-19",
-                        "qwen-max-2024-04-28",
-                        "qwen-max-2024-04-03",
-                        "qwen-max-2024-01-07",
-                    ],
-                    {"default": "qwen-max-latest"},
-                ),
-                "qwen_plus": (
-                    [
-                        "qwen-plus",
-                        "qwen-plus-latest",
-                        "qwen-plus-2024-11-27",
-                        "qwen-plus-2024-11-25",
-                        "qwen-plus-2024-09-19",
-                        "qwen-plus-2024-08-06",
-                        "qwen-plus-2024-07-23",
-                        "qwen-plus-2024-06-24",
-                        "qwen-plus-2024-02-06",
-                    ],
-                    {"default": "qwen-plus-latest"},
-                ),
-                "qwen_turbo": (
-                    [
-                        "qwen-turbo",
-                        "qwen-turbo-latest",
-                        "qwen-turbo-2024-11-01",
-                        "qwen-turbo-2024-09-19",
-                        "qwen-turbo-2024-06-24",
-                        "qwen-turbo-2024-02-06",
-                    ],
-                    {"default": "qwen-turbo-latest"},
-                ),
-                "qwen_long": (["qwen_long"], {"default": "qwen_long"}),
             }
         }
 
     FUNCTION = "select_model"
     OUTPUT_NODE = True
     RETURN_TYPES = ("STRING",)
-
     CATEGORY = "dashscope"
 
-    def select_model(
-        self, model_type, qwen_max, qwen_plus, qwen_turbo, qwen_long
-    ) -> tuple[str]:
-        if model_type == "qwen_max":
-            model_version = qwen_max
-        elif model_type == "qwen_plus":
-            model_version = qwen_plus
-        elif model_type == "qwen_turbo":
-            model_version = qwen_turbo
-        elif model_type == "qwen_long":
-            model_version = qwen_long
-        else:
-            raise ValueError(f"Invalid model type: {model_type}")
-
+    def select_model(self, model_version) -> tuple[str]:
+        print("Selected model version:", model_version)
+        if not model_version:
+            raise ValueError("Model version cannot be empty")
         return (model_version,)
 
 
@@ -101,22 +78,18 @@ class DashscopeVLMLoader:
 
     @classmethod
     def INPUT_TYPES(cls):
+        model_versions = get_model_versions()
         return {
             "required": {
                 "model_version": (
-                    [
-                        "qwen-vl-max",
-                        "qwen-vl-max-latest",
-                        "qwen-vl-max-2024-11-19",
-                        "qwen-vl-max-2024-10-30",
-                        "qwen-vl-max-2024-08-09",
-                        "qwen-vl-max-2024-02-01",
-                        "qwen-vl-plus",
-                        "qwen-vl-plus-latest",
-                        "qwen-vl-plus-2024-08-09",
-                        "qwen-vl-plus-2023-12-01",
-                    ],
-                    {"default": "qwen-vl-max-latest"},
+                    model_versions,
+                    {
+                        "default": (
+                            model_versions[0]
+                            if model_versions
+                            else "qwen-vl-max-latest"
+                        )
+                    },
                 ),
             }
         }
@@ -187,7 +160,6 @@ class DashscopeModelCaller:
             )
         else:
             print("Call the VLM model")
-            print("Model version is: ", model_version)
             image_url = get_image_url(image)
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -208,11 +180,6 @@ class DashscopeModelCaller:
 
         if response is None:
             raise ValueError("API call returned None")
-
-        print("API Response:", response)
-
-        if "output" not in response:
-            raise ValueError(f"Unexpected response format. Response: {response}")
 
         message_content = response.output.choices[0].message.content[0]["text"]
         return (message_content,)

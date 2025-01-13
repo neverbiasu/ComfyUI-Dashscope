@@ -1,0 +1,11 @@
+[qwen-vl-max]
+qwen-vl-max-latest
+qwen-vl-max-2024-11-19
+qwen-vl-max-2024-10-30
+qwen-vl-max-2024-08-09
+qwen-vl-max-2024-02-01
+
+[qwen-vl-plus]
+qwen-vl-plus-latest
+qwen-vl-plus-2024-08-09
+qwen-vl-plus-2023-12-01
