@@ -51,11 +51,7 @@ class DashscopeLLMLoader:
             "required": {
                 "model_version": (
                     model_versions,
-                    {
-                        "default": (
-                            model_versions[0] if model_versions else "qwen-max-latest"
-                        )
-                    },
+                    {"default": model_versions[0]},
                 ),
             }
         }
@@ -83,13 +79,7 @@ class DashscopeVLMLoader:
             "required": {
                 "model_version": (
                     model_versions,
-                    {
-                        "default": (
-                            model_versions[0]
-                            if model_versions
-                            else "qwen-vl-max-latest"
-                        )
-                    },
+                    {"default": model_versions[0]},
                 ),
             }
         }
