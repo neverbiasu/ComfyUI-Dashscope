@@ -125,6 +125,7 @@ class DashscopeVLMLoader:
     CATEGORY = "dashscope"
 
     def select_model(self, model_version):
+        print("Selected model version: ", model_version)
         if not model_version:
             raise ValueError("Model version cannot be empty")
         return model_version
@@ -168,7 +169,7 @@ class DashscopeModelCaller:
         if not api_key:
             raise ValueError("DASHSCOPE_API_KEY environment variable is not set")
 
-        if image == None:
+        if not image:
             print("Call the LLM model")
             messages = [
                 {"role": "system", "content": system_prompt},
