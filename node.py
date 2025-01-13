@@ -179,13 +179,17 @@ class DashscopeModelCaller:
         if not user_prompt:
             raise ValueError("User prompt cannot be empty")
 
+        api_key = os.getenv("DASHSCOPE_API_KEY")
+        if not api_key:
+            raise ValueError("DASHSCOPE_API_KEY environment variable is not set")
+
         if image == None:
             messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ]
             response = Generation.call(
-                api_key=os.getenv("DASHSCOPE_API_KEY"),
+                api_key=api_key,
                 model=model_version,
                 messages=messages,
                 result_format="message",
@@ -203,11 +207,19 @@ class DashscopeModelCaller:
                 },
             ]
             response = MultiModalConversation.call(
-                api_key=os.getenv("DASHSCOPE_API_KEY"),
+                api_key=api_key,
                 model=model_version,
                 messages=messages,
                 result_format="message",
             )
+
+        if response is None:
+            raise ValueError("API call returned None")
+
+        print("API Response:", response)
+        
+        if "output" not in response:
+            raise ValueError(f"Unexpected response format. Response: {response}")
 
         message_content = response["output"]["choices"][0]["message"]["content"]
         return message_content
