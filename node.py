@@ -78,7 +78,9 @@ class DashscopeLLMLoader:
 
     CATEGORY = "dashscope"
 
-    def select_model(self, model_type, qwen_max, qwen_plus, qwen_turbo, qwen_long):
+    def select_model(
+        self, model_type, qwen_max, qwen_plus, qwen_turbo, qwen_long
+    ) -> tuple[str]:
         if model_type == "qwen_max":
             model_version = qwen_max
         elif model_type == "qwen_plus":
@@ -90,7 +92,7 @@ class DashscopeLLMLoader:
         else:
             raise ValueError(f"Invalid model type: {model_type}")
 
-        return model_version
+        return (model_version,)
 
 
 class DashscopeVLMLoader:
@@ -124,11 +126,11 @@ class DashscopeVLMLoader:
     RETURN_TYPES = ("STRING",)
     CATEGORY = "dashscope"
 
-    def select_model(self, model_version):
+    def select_model(self, model_version) -> tuple[str]:
         print("Selected model version: ", model_version)
         if not model_version:
             raise ValueError("Model version cannot be empty")
-        return model_version
+        return (model_version,)
 
 
 class DashscopeModelCaller:
@@ -157,7 +159,9 @@ class DashscopeModelCaller:
 
     CATEGORY = "dashscope"
 
-    def call_model(self, model_version, system_prompt, user_prompt, image):
+    def call_model(
+        self, model_version, system_prompt, user_prompt, image
+    ) -> tuple[str]:
         if not model_version:
             raise ValueError("Model version cannot be empty")
         if not system_prompt:
@@ -169,7 +173,7 @@ class DashscopeModelCaller:
         if not api_key:
             raise ValueError("DASHSCOPE_API_KEY environment variable is not set")
 
-        if not image:
+        if image == None:
             print("Call the LLM model")
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -211,4 +215,4 @@ class DashscopeModelCaller:
             raise ValueError(f"Unexpected response format. Response: {response}")
 
         message_content = response["output"]["choices"][0]["message"]["content"]
-        return message_content
+        return (message_content,)
