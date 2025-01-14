@@ -23,7 +23,10 @@ def get_image_url(image):
 def get_model_versions(model_type: str) -> list[str]:
     model_versions = []
     current_group = None
-    model_versions_file = f"model_versions/{model_type}.txt"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    model_versions_file = os.path.join(
+        current_dir, "model_versions", f"{model_type}.txt"
+    )
 
     with open(model_versions_file, "r", encoding="utf-8") as f:
         for line in f:
@@ -102,10 +105,9 @@ class DashscopeModelCaller:
 
     @classmethod
     def INPUT_TYPES(cls):
-        model_versions = get_model_versions("vlm")
         return {
             "required": {
-                "model_version": (model_versions),
+                "model_version": ("STRING",),
                 "system_prompt": (
                     "STRING",
                     {"default": "You are a helpful assistant."},
