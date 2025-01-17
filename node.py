@@ -107,12 +107,12 @@ class DashscopeModelCaller:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "model_version": ("STRING",),
+                "model_version": ("STRING", {"default": None}),
                 "system_prompt": (
                     "STRING",
-                    {"default": "You are a helpful assistant."},
+                    {"default": None},
                 ),
-                "user_prompt": ("STRING", {"default": ""}),
+                "user_prompt": ("STRING", {"default": None}),
             },
             "optional": {
                 "image": ("IMAGE", {"default": None}),
