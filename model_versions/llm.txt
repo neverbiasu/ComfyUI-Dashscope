@@ -1,4 +1,5 @@
 [qwen-max]
+qwen-max
 qwen-max-latest
 qwen-max-2024-09-19
 qwen-max-2024-04-28
@@ -6,7 +7,10 @@ qwen-max-2024-04-03
 qwen-max-2024-01-07
 
 [qwen-plus]
+qwen-plus
 qwen-plus-latest
+qwen-plus-2025-01-12
+qwen-plus-2024-12-20
 qwen-plus-2024-11-27
 qwen-plus-2024-11-25
 qwen-plus-2024-09-19
@@ -16,6 +20,7 @@ qwen-plus-2024-06-24
 qwen-plus-2024-02-06
 
 [qwen-turbo]
+qwen-turbo
 qwen-turbo-latest
 qwen-turbo-2024-11-01
 qwen-turbo-2024-09-19
