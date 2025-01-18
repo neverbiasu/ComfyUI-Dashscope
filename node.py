@@ -155,7 +155,7 @@ class DashscopeModelCaller:
             print("Call the VLM model")
             image_url = get_image_url(image)
             messages = [
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": [{"text": system_prompt}]},
                 {
                     "role": "user",
                     "content": [
