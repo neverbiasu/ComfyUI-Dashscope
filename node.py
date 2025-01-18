@@ -2,6 +2,7 @@ import os
 import random
 import string
 from dashscope import Generation, MultiModalConversation
+from http import HTTPStatus
 import torchvision.transforms as transforms
 
 
@@ -171,8 +172,11 @@ class DashscopeModelCaller:
                 result_format="message",
             )
 
-        if response is None:
-            raise ValueError("API call returned None")
+        if response.status_code == HTTPStatus.OK:
+            print(response.output)
+        else:
+            print(response.code)
+            print(response.message)
 
         message_content = response.output.choices[0].message.content[0]["text"]
         return (message_content,)
