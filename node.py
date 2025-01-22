@@ -100,6 +100,89 @@ class DashscopeVLMLoader:
         return (model_version,)
 
 
+# 关于OCR模型的最小像素值，根据阿里云文字识别服务的要求，图片的最短边不小于15像素，单字大小在10-50像素内时，识别效果较好。因此，28像素并不是OCR模型的最小像素值。
+# 您好，关于OCR中min_pixels为3136（即28284）的28、28和4的含义如下：
+
+# 28：表示图像的高度，单位为像素。
+# 28：表示图像的宽度，单位为像素。
+# 4：表示每个像素的通道数，通常为4个通道（R、G、B和Alpha）。
+
+
+# 关于OCR中图片的宽高比要求，根据阿里云文字识别服务的要求，单张图片的最长边不超过4096像素，最短边不小于15像素，当长边超过1024像素时，长宽比不超过1:10。
+
+
+# 这通常与OCR模型的设计和性能优化有关。1280这个值可能是为了平衡图像质量和处理速度，确保在大多数情况下能够高效地处理图像。
+class DashscopeOCRCaller:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        model_versions = get_model_versions("ocr")
+        return {
+            "required": {
+                "model_version": (
+                    model_versions,
+                    {"default": model_versions[0]},
+                ),
+                "min_pixels": (
+                    "STRING",
+                    {"default": 28 * 28 * 4},
+                ),  # width, height, channels
+                "max_pixels": (
+                    "STRING",
+                    {"default": 28 * 28 * 1280},
+                ),  # larger channels to balance image quality and processing speed
+                "image": ("IMAGE", {"default": None}),
+            }
+        }
+
+    FUNCTION = "call_model"
+    OUTPUT_NODE = True
+    RETURN_TYPES = ("STRING",)
+
+    CATEGORY = "dashscope"
+
+    def call_model(self, model_version, min_pixels, max_pixels, image) -> tuple[str]:
+        if not model_version:
+            raise ValueError("Model version cannot be empty")
+
+        api_key = os.getenv("DASHSCOPE_API_KEY")
+        if not api_key:
+            raise ValueError("DASHSCOPE_API_KEY environment variable is not set")
+
+        print("Call the OCR model")
+        image_url = get_image_url(image)
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "image": image_url,
+                        "min_pixels": min_pixels,
+                        "max_pixels": max_pixels,
+                    },
+                    {"type": "text", "text": "Read all the text in the image."},
+                ],
+            },
+        ]
+        response = MultiModalConversation.call(
+            api_key=api_key,
+            model=model_version,
+            messages=messages,
+            result_format="message",
+        )
+
+        if response.status_code == HTTPStatus.OK:
+            print(response.output)
+        else:
+            print(response.code)
+            print(response.message)
+
+        message_content = response.output.choices[0].message.content[0]["text"]
+        return (message_content,)
+
+
 class DashscopeModelCaller:
     def __init__(self):
         pass
