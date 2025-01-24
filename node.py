@@ -8,6 +8,9 @@ import requests
 import torchvision.transforms as transforms
 import torchvision.io as io
 import torch
+import torchaudio
+import torchvision
+import folder_paths
 import numpy as np
 
 
@@ -21,21 +24,53 @@ def generate_random_video_name():
     return f"video_{random_number}.mp4"
 
 
-def get_image_url(image):
-    image = image.squeeze(0)
-    image = image.permute(2, 0, 1)
-    image = transforms.ToPILImage()(image)
+def generate_random_audio_name():
+    random_number = "".join(random.choices(string.ascii_letters + string.digits, k=10))
+    return f"audio_{random_number}.wav"
 
-    image_name = generate_random_image_name()
-    image.save(image_name)
-    return image_name
+
+def get_image_url(image):
+    try:
+        image = image.squeeze(0)
+        image = image.permute(2, 0, 1)
+        image = transforms.ToPILImage()(image)
+
+        image_name = generate_random_image_name()
+        save_path = os.path.join(folder_paths.get_output_directory, image_name)
+        torchvision.utils.save_image(image, save_path)
+
+        if os.path.exists(image_name):
+            os.remove(image_name)
+            
+        return image_name
+
+    except Exception as e:
+        if os.path.exists(image_name):
+            os.remove(image_name)
+        raise RuntimeError(f"处理图片失败: {str(e)}")
 
 
 def get_audio_url(audio):
-    random_number = "".join(random.choices(string.ascii_letters + string.digits, k=10))
-    audio_name = f"audio_{random_number}.wav"
-    audio.save(audio_name)
-    return audio_name
+    try:
+        waveform = audio["waveform"]
+        sample_rate = audio["sample_rate"]
+
+        if waveform.dim() == 3:
+            waveform = waveform.squeeze(0)
+
+        audio_name = generate_random_audio_name()
+        save_path = os.path.join(folder_paths.get_output_directory, audio_name)
+        torchaudio.save(save_path, waveform, sample_rate, format="wav")
+
+        if os.path.exists(audio_name):
+            os.remove(audio_name)
+
+        return audio_name
+
+    except Exception as e:
+        if os.path.exists(audio_name):
+            os.remove(audio_name)
+        raise RuntimeError(f"处理音频失败: {str(e)}")
 
 
 def get_model_versions(model_type: str) -> list[str]:
@@ -487,8 +522,10 @@ class DashscopeEmoCaller:
         return response.json()
 
     def call_model(self, image, audio):
-        if image is None or audio is None:
-            raise ValueError("Image and audio cannot be empty")
+        if image is None:
+            raise ValueError("Image cannot be empty")
+        if audio is None:
+            raise ValueError("Audio cannot be empty")
 
         synthesis_response = self._request_synthesis(image, audio)
         task_id = synthesis_response.get("output", {}).get("task_id")
