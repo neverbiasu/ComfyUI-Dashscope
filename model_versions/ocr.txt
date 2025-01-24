@@ -1,0 +1,3 @@
+qwen-vl-ocr
+qwen-vl-ocr-latest
+qwen-vl-ocr-2024-10-28
