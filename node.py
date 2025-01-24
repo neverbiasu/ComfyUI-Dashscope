@@ -203,11 +203,11 @@ class DashscopeOCRCaller:
                 ),
                 "min_pixels": (
                     "STRING",
-                    {"default": 28 * 28 * 4},
+                    {"default": "28 * 28 * 4"},
                 ),  # width, height, channels
                 "max_pixels": (
                     "STRING",
-                    {"default": 28 * 28 * 1280},
+                    {"default": "28 * 28 * 1280"},
                 ),  # larger channels to balance image quality and processing speed
                 "image": ("IMAGE", {"default": None}),
             }
@@ -446,6 +446,7 @@ class DashscopeEmoCaller:
     def _request_synthesis(self, image, audio):
         img_url = get_image_url(image)
         audio_url = get_audio_url(audio)
+        face_bbox, ext_bbox = self.detect_face(image, "1:1")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -455,7 +456,12 @@ class DashscopeEmoCaller:
 
         payload = {
             "model": "emo-v1",
-            "input": {"image_url": img_url, "audio_url": audio_url},
+            "input": {
+                "image_url": img_url,
+                "audio_url": audio_url,
+                "face_bbox": face_bbox,
+                "ext_bbox": ext_bbox,
+            },
             "parameters": {"style_level": "normal"},
         }
 
