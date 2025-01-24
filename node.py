@@ -35,7 +35,7 @@ def get_image_url(image):
     image = transforms.ToPILImage()(image)
 
     image_name = generate_random_image_name()
-    save_path = os.path.join(folder_paths.get_output_directory, image_name)
+    save_path = os.path.join(folder_paths.get_output_directory(), image_name)
     torchvision.utils.save_image(image, save_path)
 
     if os.path.exists(image_name):
@@ -52,7 +52,7 @@ def get_audio_url(audio):
         waveform = waveform.squeeze(0)
 
     audio_name = generate_random_audio_name()
-    save_path = os.path.join(folder_paths.get_output_directory, audio_name)
+    save_path = os.path.join(folder_paths.get_output_directory(), audio_name)
     torchaudio.save(save_path, waveform, sample_rate, format="wav")
 
     if os.path.exists(audio_name):
