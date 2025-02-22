@@ -95,7 +95,7 @@ def video_to_images(video_path: str, fps: float = None) -> tuple:
         raise RuntimeError(f"视频文件不存在: {video_path}")
 
     if not any(video_path.lower().endswith(ext) for ext in VIDEO_EXTENSIONS):
-        raise RuntimeError(f"不支持的视频格式，支持: {", ".join(VIDEO_EXTENSIONS)}")
+        raise RuntimeError(f"不支持的视频格式，支持: {', '.join(VIDEO_EXTENSIONS)}")
 
     if os.path.getsize(video_path) > MAX_VIDEO_SIZE_MB * 1024 * 1024:
         raise RuntimeError(f"视频文件过大，最大支持 {MAX_VIDEO_SIZE_MB}MB")
