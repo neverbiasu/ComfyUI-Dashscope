@@ -14,6 +14,9 @@ import folder_paths
 import numpy as np
 
 
+MODEL_VERSION_ERROR = "Model version cannot be empty"
+
+
 def generate_random_image_name():
     random_number = "".join(random.choices(string.ascii_letters + string.digits, k=10))
     return f"image_{random_number}.png"
@@ -63,7 +66,6 @@ def get_audio_url(audio):
 
 def get_model_versions(model_type: str) -> list[str]:
     model_versions = []
-    current_group = None
     current_dir = os.path.dirname(os.path.abspath(__file__))
     model_versions_file = os.path.join(
         current_dir, "model_versions", f"{model_type}.txt"
@@ -76,7 +78,6 @@ def get_model_versions(model_type: str) -> list[str]:
                 continue
 
             if line.startswith("[") and line.endswith("]"):
-                current_group = line[1:-1]
                 continue
 
             model_versions.append(line)
@@ -102,7 +103,7 @@ def video_to_images(video_path: str, fps: float = None) -> tuple:
 
     try:
         # 读取视频
-        frames, audio_frames, metadata = io.read_video(video_path, pts_unit="sec")
+        frames, _, metadata = io.read_video(video_path, pts_unit="sec")
 
         if frames.shape[0] == 0:
             raise RuntimeError("视频帧为空")
@@ -144,9 +145,6 @@ def video_to_images(video_path: str, fps: float = None) -> tuple:
 
 
 class DashscopeLLMLoader:
-    def __init__(self):
-        pass
-
     @classmethod
     def INPUT_TYPES(cls):
         model_versions = get_model_versions("llm")
@@ -167,14 +165,11 @@ class DashscopeLLMLoader:
 
     def select_model(self, model_version) -> tuple[str]:
         if not model_version:
-            raise ValueError("Model version cannot be empty")
+            raise ValueError(MODEL_VERSION_ERROR)
         return (model_version,)
 
 
 class DashscopeVLMLoader:
-    def __init__(self):
-        pass
-
     @classmethod
     def INPUT_TYPES(cls):
         model_versions = get_model_versions("vlm")
@@ -195,26 +190,11 @@ class DashscopeVLMLoader:
 
     def select_model(self, model_version) -> tuple[str]:
         if not model_version:
-            raise ValueError("Model version cannot be empty")
+            raise ValueError(MODEL_VERSION_ERROR)
         return (model_version,)
 
 
-# 关于OCR模型的最小像素值，根据阿里云文字识别服务的要求，图片的最短边不小于15像素，单字大小在10-50像素内时，识别效果较好。因此，28像素并不是OCR模型的最小像素值。
-# 您好，关于OCR中min_pixels为3136（即28284）的28、28和4的含义如下：
-
-# 28：表示图像的高度，单位为像素。
-# 28：表示图像的宽度，单位为像素。
-# 4：表示每个像素的通道数，通常为4个通道（R、G、B和Alpha）。
-
-
-# 关于OCR中图片的宽高比要求，根据阿里云文字识别服务的要求，单张图片的最长边不超过4096像素，最短边不小于15像素，当长边超过1024像素时，长宽比不超过1:10。
-
-
-# 这通常与OCR模型的设计和性能优化有关。1280这个值可能是为了平衡图像质量和处理速度，确保在大多数情况下能够高效地处理图像。
 class DashscopeOCRCaller:
-    def __init__(self):
-        pass
-
     @classmethod
     def INPUT_TYPES(cls):
         model_versions = get_model_versions("ocr")
@@ -244,7 +224,7 @@ class DashscopeOCRCaller:
 
     def call_model(self, model_version, min_pixels, max_pixels, image) -> tuple[str]:
         if not model_version:
-            raise ValueError("Model version cannot be empty")
+            raise ValueError(MODEL_VERSION_ERROR)
 
         api_key = os.getenv("DASHSCOPE_API_KEY")
         if not api_key:
@@ -283,9 +263,6 @@ class DashscopeOCRCaller:
 
 
 class DashscopeModelCaller:
-    def __init__(self):
-        pass
-
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -312,7 +289,7 @@ class DashscopeModelCaller:
         self, model_version, system_prompt, user_prompt, image
     ) -> tuple[str]:
         if not model_version:
-            raise ValueError("Model version cannot be empty")
+            raise ValueError(MODEL_VERSION_ERROR)
         if not system_prompt:
             raise ValueError("System prompt cannot be empty")
         if not user_prompt:
@@ -364,21 +341,6 @@ class DashscopeModelCaller:
         return (message_content,)
 
 
-# 输入限制
-# 图像格式：格式为jpg，jpeg，png，bmp，webp。
-
-# 图像分辨率：图像最小边长≥400像素，最大边长≤7000像素。
-
-# 图像坐标框：图像需先通过EMO图像检测API，以获得正确的人脸区域和动态区域坐标信息。
-
-# 音频格式：格式为wav、mp3。
-
-# 音频限制：文件<15M，时长＜60s。
-
-# 音频内容：音频中需包含清晰、响亮的人声语音，并去除了环境噪音、背景音乐等声音干扰信息。
-
-
-# 上传图片、音频链接仅支持HTTP链接方式，不支持本地链接方式。
 class DashscopeEmoCaller:
     def __init__(self):
         self.api_key = os.getenv("DASHSCOPE_API_KEY")
@@ -458,7 +420,6 @@ class DashscopeEmoCaller:
             error_response = response.json()
             error_output = error_response.get("output", {})
             error_code = error_output.get("code", "")
-            error_message = error_output.get("message", "")
             error_message = ERROR_CODE_MAP.get(
                 error_code, f"Unknown error: {error_code}"
             )
