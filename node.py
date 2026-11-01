@@ -12,6 +12,8 @@ import torchaudio
 import torchvision
 import folder_paths
 import numpy as np
+from typing_extensions import override
+from comfy_api.latest import ComfyExtension, io as comfy_io
 
 
 MODEL_VERSION_ERROR = "Model version cannot be empty"
@@ -144,85 +146,98 @@ def video_to_images(video_path: str, fps: float = None) -> tuple:
         raise RuntimeError(f"视频转换失败: {str(e)}")
 
 
-class DashscopeLLMLoader:
+class DashscopeLLMLoader(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
+    def define_schema(cls):
         model_versions = get_model_versions("llm")
-        return {
-            "required": {
-                "model_version": (
-                    model_versions,
-                    {"default": model_versions[0]},
+        return comfy_io.Schema(
+            node_id="DashscopeLLMLoader",
+            display_name="Dashscope LLM Loader",
+            category="dashscope",
+            is_output_node=True,
+            inputs=[
+                comfy_io.Combo.Input(
+                    "model_version",
+                    options=model_versions,
+                    default=model_versions[0],
                 ),
-            }
-        }
+            ],
+            outputs=[comfy_io.String.Output()],
+        )
 
-    FUNCTION = "select_model"
-    OUTPUT_NODE = True
-    RETURN_TYPES = ("STRING",)
-
-    CATEGORY = "dashscope"
-
-    def select_model(self, model_version) -> tuple[str]:
+    @classmethod
+    def execute(cls, model_version):
         if not model_version:
             raise ValueError(MODEL_VERSION_ERROR)
-        return (model_version,)
+        return comfy_io.NodeOutput(model_version)
 
 
-class DashscopeVLMLoader:
+class DashscopeExtension(ComfyExtension):
+    @override
+    async def get_node_list(self) -> list[type[comfy_io.ComfyNode]]:
+        return [
+            DashscopeLLMLoader,
+            DashscopeVLMLoader,
+            DashscopeOCRCaller,
+            DashscopeModelCaller,
+            DashscopeEmoCaller,
+        ]
+
+
+async def comfy_entrypoint() -> DashscopeExtension:
+    return DashscopeExtension()
+
+
+class DashscopeVLMLoader(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
+    def define_schema(cls):
         model_versions = get_model_versions("vlm")
-        return {
-            "required": {
-                "model_version": (
-                    model_versions,
-                    {"default": model_versions[0]},
+        return comfy_io.Schema(
+            node_id="DashscopeVLMLoader",
+            display_name="Dashscope VLM Loader",
+            category="dashscope",
+            is_output_node=True,
+            inputs=[
+                comfy_io.Combo.Input(
+                    "model_version",
+                    options=model_versions,
+                    default=model_versions[0],
                 ),
-            }
-        }
+            ],
+            outputs=[comfy_io.String.Output()],
+        )
 
-    FUNCTION = "select_model"
-    OUTPUT_NODE = True
-    RETURN_TYPES = ("STRING",)
-
-    CATEGORY = "dashscope"
-
-    def select_model(self, model_version) -> tuple[str]:
+    @classmethod
+    def execute(cls, model_version):
         if not model_version:
             raise ValueError(MODEL_VERSION_ERROR)
-        return (model_version,)
+        return comfy_io.NodeOutput(model_version)
 
 
-class DashscopeOCRCaller:
+class DashscopeOCRCaller(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
+    def define_schema(cls):
         model_versions = get_model_versions("ocr")
-        return {
-            "required": {
-                "model_version": (
-                    model_versions,
-                    {"default": model_versions[0]},
+        return comfy_io.Schema(
+            node_id="DashscopeOCRCaller",
+            display_name="Dashscope OCR Caller",
+            category="dashscope",
+            is_output_node=True,
+            inputs=[
+                comfy_io.Combo.Input(
+                    "model_version",
+                    options=model_versions,
+                    default=model_versions[0],
                 ),
-                "min_pixels": (
-                    "STRING",
-                    {"default": "28 * 28 * 4"},
-                ),  # width, height, channels
-                "max_pixels": (
-                    "STRING",
-                    {"default": "28 * 28 * 1280"},
-                ),  # larger channels to balance image quality and processing speed
-                "image": ("IMAGE", {"default": None}),
-            }
-        }
+                comfy_io.String.Input("min_pixels", default="28 * 28 * 4"),
+                comfy_io.String.Input("max_pixels", default="28 * 28 * 1280"),
+                comfy_io.Image.Input("image"),
+            ],
+            outputs=[comfy_io.String.Output()],
+        )
 
-    FUNCTION = "call_model"
-    OUTPUT_NODE = True
-    RETURN_TYPES = ("STRING",)
-
-    CATEGORY = "dashscope"
-
-    def call_model(self, model_version, min_pixels, max_pixels, image) -> tuple[str]:
+    @classmethod
+    def execute(cls, model_version, min_pixels, max_pixels, image):
         if not model_version:
             raise ValueError(MODEL_VERSION_ERROR)
 
@@ -262,32 +277,25 @@ class DashscopeOCRCaller:
         return (message_content,)
 
 
-class DashscopeModelCaller:
+class DashscopeModelCaller(comfy_io.ComfyNode):
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "model_version": ("STRING", {"default": None}),
-                "system_prompt": (
-                    "STRING",
-                    {"default": None},
-                ),
-                "user_prompt": ("STRING", {"default": None}),
-            },
-            "optional": {
-                "image": ("IMAGE", {"default": None}),
-            },
-        }
+    def define_schema(cls):
+        return comfy_io.Schema(
+            node_id="DashscopeModelCaller",
+            display_name="Dashscope Model Caller",
+            category="dashscope",
+            is_output_node=True,
+            inputs=[
+                comfy_io.String.Input("model_version", default=None),
+                comfy_io.String.Input("system_prompt", default=None),
+                comfy_io.String.Input("user_prompt", default=None),
+                comfy_io.Image.Input("image", optional=True),
+            ],
+            outputs=[comfy_io.String.Output()],
+        )
 
-    FUNCTION = "call_model"
-    OUTPUT_NODE = True
-    RETURN_TYPES = ("STRING",)
-
-    CATEGORY = "dashscope"
-
-    def call_model(
-        self, model_version, system_prompt, user_prompt, image
-    ) -> tuple[str]:
+    @classmethod
+    def execute(cls, model_version, system_prompt, user_prompt, image=None):
         if not model_version:
             raise ValueError(MODEL_VERSION_ERROR)
         if not system_prompt:
@@ -341,34 +349,31 @@ class DashscopeModelCaller:
         return (message_content,)
 
 
-class DashscopeEmoCaller:
-    def __init__(self):
-        self.api_key = os.getenv("DASHSCOPE_API_KEY")
-        self.face_detect_url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/image2video/face-detect"
-        self.video_systhesis_url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/image2video/video-synthesis"
+class DashscopeEmoCaller(comfy_io.ComfyNode):
+    face_detect_url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/image2video/face-detect"
+    video_systhesis_url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/image2video/video-synthesis"
 
     @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "image": ("IMAGE", {"default": None}),
-                "audio": ("AUDIO", {"default": None}),
-            },
-        }
+    def define_schema(cls):
+        return comfy_io.Schema(
+            node_id="DashscopeEmoCaller",
+            display_name="Dashscope Emotion Caller",
+            category="dashscope",
+            is_output_node=True,
+            inputs=[
+                comfy_io.Image.Input("image"),
+                comfy_io.Audio.Input("audio"),
+            ],
+            outputs=[
+                comfy_io.Image.Output("frames"),
+                comfy_io.Int.Output("frame_count"),
+                comfy_io.Custom("VHS_VIDEOINFO").Output("video_info"),
+                comfy_io.Audio.Output("audio"),
+            ],
+        )
 
-    FUNCTION = "call_model"
-    OUTPUT_NODE = True
-    RETURN_TYPES = (
-        "IMAGE",
-        "INT",
-        "VHS_VIDEOINFO",
-        "AUDIO",
-    )
-    RETURN_NAMES = ("frames", "frame_count", "video_info", "audio")
-
-    CATEGORY = "dashscope"
-
-    def detect_face(self, image, ratio) -> tuple[str]:
+    @classmethod
+    def detect_face(cls, image, ratio) -> tuple[str]:
         ERROR_CODE_MAP = {
             "InvalidParameter": "The request parameters format is invalid.",
             "InvalidParameter.Ratio": "Invalid ratio parameter, must be '1:1' or '3:4'.",
@@ -408,7 +413,7 @@ class DashscopeEmoCaller:
             "parameters": {"ratio": ratio},
         }
 
-        response = requests.post(self.face_detect_url, headers=headers, json=payload)
+        response = requests.post(cls.face_detect_url, headers=headers, json=payload)
 
         if response.status_code == HTTPStatus.OK:
             response_data = response.json()
@@ -427,10 +432,11 @@ class DashscopeEmoCaller:
             print(friendly_message)
             return (error_message,)
 
-    def _request_synthesis(self, image, audio):
+    @classmethod
+    def _request_synthesis(cls, image, audio):
         img_url = get_image_url(image)
         audio_url = get_audio_url(audio)
-        face_bbox, ext_bbox = self.detect_face(image, "1:1")
+        face_bbox, ext_bbox = cls.detect_face(image, "1:1")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -450,7 +456,7 @@ class DashscopeEmoCaller:
         }
 
         response = requests.post(
-            self.video_systhesis_url, headers=headers, json=payload
+            cls.video_systhesis_url, headers=headers, json=payload
         )
 
         if response.status_code != 200:
@@ -458,7 +464,8 @@ class DashscopeEmoCaller:
 
         return response.json()
 
-    def _check_task_status(self, task_id):
+    @classmethod
+    def _check_task_status(cls, task_id):
         headers = {"Authorization": f"Bearer {self.api_key}"}
 
         response = requests.get(
@@ -470,19 +477,20 @@ class DashscopeEmoCaller:
 
         return response.json()
 
-    def call_model(self, image, audio):
+    @classmethod
+    def execute(cls, image, audio):
         if image is None:
             raise ValueError("Image cannot be empty")
         if audio is None:
             raise ValueError("Audio cannot be empty")
 
-        synthesis_response = self._request_synthesis(image, audio)
+        synthesis_response = cls._request_synthesis(image, audio)
         task_id = synthesis_response.get("output", {}).get("task_id")
         if not task_id:
             raise RuntimeError("Failed to get task_id")
 
         while True:
-            status_response = self._check_task_status(task_id)
+            status_response = cls._check_task_status(task_id)
             task_status = status_response.get("output", {}).get("task_status")
 
             if task_status == "SUCCEEDED":
@@ -497,7 +505,7 @@ class DashscopeEmoCaller:
                     with open(video_filename, "wb") as f:
                         f.write(response.content)
                     frames, frame_count, video_info = video_to_images(video_filename)
-                    return (frames, frame_count, video_info, audio)
+                    return comfy_io.NodeOutput(frames, frame_count, video_info, audio)
                 else:
                     raise RuntimeError(
                         f"Failed to download video: {response.status_code}"
