@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-dashscope"
 description = "This project adapts the dashscope([a/aliyun-bailian](https://bailian.console.aliyun.com)) api into ComfyUI."
-version = "1.0.1"
+version = "1.1.0"
 license = {file = "LICENSE"}
 dependencies = ["dashscope"]
 
